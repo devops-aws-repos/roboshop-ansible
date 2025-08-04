@@ -1,6 +1,8 @@
 - name: install shipping component
   hosts: shipping
   become: yes
+  vars:
+    mysql_password: RoboShop@1
   tasks:
   - name: install maven 
     ansible.builtin.dnf:
@@ -56,14 +58,10 @@
       name: mysql
       state: present
 
-  # - name: check cities schema exists or not 
-  #   ansible.builtin.command: 
-  - name: Check if 'cities' database exists
-    community.mysql.mysql_info:
-      filter: databases
-    register: dbs
+  - name: check cities schema exists or not 
+    ansible.builtin.command: mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} -sN -e "SELECT COUNT(*) FROM INFORMATION SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'mysql'"
+    register: schema
 
-  - name: Debug result
-    debug:
-      msg: "'cities' exists!" 
-    when: "'cities' in dbs.databases"
+  - name: print output
+    ansible.builtin.debug:
+      msg: "schema output: {{schema}}"
