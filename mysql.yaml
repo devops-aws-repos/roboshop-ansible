@@ -3,7 +3,7 @@
   become: yes
   tasks:
   - name: disable mysql present version
-    ansible.builtin.dnf: dnf module disable mysql -y
+    ansible.builtin.command: dnf module disable mysql -y
 
   - name: setup mysql 5.7 repo
     ansible.builtin.copy:
