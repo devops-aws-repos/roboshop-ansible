@@ -42,7 +42,7 @@
 
   - name: daemon reload
     ansible.builtin.systmd_service:
-    daemon_reload: true
+      daemon_reload: true
 
   # start the service after the data is loaded otherwise errors may come 
   - name: Copy mongodb repo
