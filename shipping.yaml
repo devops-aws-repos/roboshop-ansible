@@ -66,21 +66,36 @@
     ansible.builtin.debug:
       msg: "schema output: {{schema}}"
 
-  - name: Copy shipping.sql to target machine
-    ansible.builtin.copy:
-      src: schema/shipping.sql
-      dest: /tmp/shipping.sql
+  # - name: Copy shipping.sql to target machine
+  #   ansible.builtin.copy:
+  #     src: schema/shipping.sql
+  #     dest: /tmp/shipping.sql
 
-  - name: Load shipping.sql into MySQL
-    ansible.builtin.command: >
-      mysql -h mysql.aarviaarno.online -uroot -pRoboShop@1 < /tmp/shipping.sql
-    args:
-      executable: /bin/bash
+  # - name: Load shipping.sql into MySQL
+  #   ansible.builtin.command: >
+  #     mysql -h mysql.aarviaarno.online -uroot -pRoboShop@1 < /tmp/shipping.sql
+  #   args:
+  #     executable: /bin/bash
 
 
-  - name: load cities data
-    ansible.builtin.shell: "mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} < /app/schema/shipping.sql"
-    when: schema.stdout != "1"
+  # - name: load cities data
+  #   ansible.builtin.shell: "mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} < /app/db/shipping.sql"
+  #   when: schema.stdout != "1"
+
+  - name: import data
+    tags:
+    - import
+    community.mysql.mysql_db:
+      name: all
+      login_user: root
+      login_password: {{mysql_password}}
+      login_host: mysql.aarviaarno.online
+      state: import
+      target: "{{ item }}"
+    loop:
+    - /app/db/schema.sql
+    - /app/db/app-user.sql
+    - /app/db/master-data.sql
 
   - name: start and enable service
     ansible.builtin.service:
