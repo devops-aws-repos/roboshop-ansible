@@ -67,5 +67,11 @@
       msg: "schema output: {{schema}}"
 
   - name: load cities data
-    ansible.builtin.shell: mysql -h <MYSQL-SERVER-IPADDRESS> -uroot -p{{mysql_password}} < /app/schema/shipping.sql
+    ansible.builtin.shell: mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} < /app/schema/shipping.sql
     when: schema.stdout != "1"
+
+  - name: start and enable service
+    ansible.builtin.service:
+      name: catalogue 
+      state: restarted
+      enabled: yes
