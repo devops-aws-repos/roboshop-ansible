@@ -56,7 +56,7 @@
       state: present
 
   - name: get the catagories count
-    ansible.builtin.command: mongo --host mongodb.aarviaarno.online --quiet --eval 'db = db.getSiblingDB("catalogue") ; db.products.count()'
+    ansible.builtin.command: mongo --host mongodb.aarviaarno.online --quiet --eval 'db = db.getSiblingDB("catalogue"); db.products.count()'
     register: product_count
 
   - name: print the catagories count
@@ -65,7 +65,7 @@
 
   - name: load catalogue data
     ansible.builtin.command: mongo --host mongodb.aarviaarno.online < /app/schema/catalogue.js
-    when: product_count.stdout == 0
+    # when: product_count.stdout == 0
 
   - name: start and enable service
     ansible.builtin.service:
