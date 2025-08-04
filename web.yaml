@@ -1,4 +1,4 @@
-- name: web component
+- name: install web component
   hosts: web
   become: yes
   tasks:
@@ -14,8 +14,8 @@
   
   - name: Create html directory
     ansible.builtin.file:
-    path: /user/share/nginx/html
-    state: directory
+      path: /user/share/nginx/html
+      state: directory
 
   - name: Download web app
     ansible.builtin.get_url:
@@ -24,17 +24,17 @@
 
   - name: Extract application
     ansible.builtin.unarchive:
-    src: /tmp/web.zip
-    dest: /user/share/nginx/html
-    remote_src: yes
+      src: /tmp/web.zip
+      dest: /user/share/nginx/html
+      remote_src: yes
 
   - name: Copy roboshop configuration
     ansible.builtin.copy:
-    src: roboshop.conf
-    dest: /etc/nginx/default.d/roboshop.conf
+      src: roboshop.conf
+      dest: /etc/nginx/default.d/roboshop.conf
 
   - name: Start and Enable nginx service
-  ansible.builtin.service:
-    name: nginx
-    state: restarted
-    enabled: yes
+    ansible.builtin.service:
+      name: nginx
+      state: restarted
+      enabled: yes
