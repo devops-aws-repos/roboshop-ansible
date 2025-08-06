@@ -96,122 +96,122 @@
       name: shipping
   
 
-# - name: install shipping component
-  hosts: shipping
-  become: yes
-  vars:
-    mysql_password: RoboShop@1
-  tasks:
-  - name: install maven 
-    ansible.builtin.dnf:
-      name: maven
-      state: present
+# # - name: install shipping component
+#   hosts: shipping
+#   become: yes
+#   vars:
+#     mysql_password: RoboShop@1
+#   tasks:
+#   - name: install maven 
+#     ansible.builtin.dnf:
+#       name: maven
+#       state: present
 
-  # - name: Install Python and pip
-  #   ansible.builtin.dnf:
-  #     name:
-  #       - python3
-  #       - python3-pip
-  #     state: present
+#   # - name: Install Python and pip
+#   #   ansible.builtin.dnf:
+#   #     name:
+#   #       - python3
+#   #       - python3-pip
+#   #     state: present
 
-  # - name: install PyMySQL and cryptography 
-  #   ansible.builtin.pip:
-  #     name: "{{ item }}"
-  #     executable: pip3.9
-  #   loop:
-  #   - cryptography
-  #   - PyMySQL
+#   # - name: install PyMySQL and cryptography 
+#   #   ansible.builtin.pip:
+#   #     name: "{{ item }}"
+#   #     executable: pip3.9
+#   #   loop:
+#   #   - cryptography
+#   #   - PyMySQL
 
-  - name: add user
-    ansible.builtin.user:
-      name: roboshop
+#   - name: add user
+#     ansible.builtin.user:
+#       name: roboshop
 
-  - name: Recursively remove app directory
-    ansible.builtin.file:
-      path: /app
-      state: absent
+#   - name: Recursively remove app directory
+#     ansible.builtin.file:
+#       path: /app
+#       state: absent
 
-  - name: create app directory
-    ansible.builtin.file:
-      path: /app
-      state: directory
+#   - name: create app directory
+#     ansible.builtin.file:
+#       path: /app
+#       state: directory
 
-  - name: Download shipping application
-    ansible.builtin.get_url:
-      url: https://roboshop-builds.s3.amazonaws.com/shipping.zip
-      dest: /tmp
+#   - name: Download shipping application
+#     ansible.builtin.get_url:
+#       url: https://roboshop-builds.s3.amazonaws.com/shipping.zip
+#       dest: /tmp
 
-  - name: Extract shipping application
-    ansible.builtin.unarchive:
-      src: /tmp/shipping.zip
-      dest: /app
-      remote_src: yes
+#   - name: Extract shipping application
+#     ansible.builtin.unarchive:
+#       src: /tmp/shipping.zip
+#       dest: /app
+#       remote_src: yes
 
-  - name: install dependencies
-    ansible.builtin.command: mvn clean package
-    args:
-      chdir: /app
+#   - name: install dependencies
+#     ansible.builtin.command: mvn clean package
+#     args:
+#       chdir: /app
 
-  - name: rename jar file 
-    ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar
-    args:
-      chdir: /app
+#   - name: rename jar file 
+#     ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar
+#     args:
+#       chdir: /app
 
-  - name: copy shipping service
-    ansible.builtin.copy:
-      src: shipping.service
-      dest: /etc/systemd/system/shipping.service
+#   - name: copy shipping service
+#     ansible.builtin.copy:
+#       src: shipping.service
+#       dest: /etc/systemd/system/shipping.service
 
-  - name: daemon reload
-    ansible.builtin.systemd_service:
-      daemon_reload: true
+#   - name: daemon reload
+#     ansible.builtin.systemd_service:
+#       daemon_reload: true
 
-  - name: install mysql client
-    ansible.builtin.dnf:
-      name: mysql
-      state: present
+#   - name: install mysql client
+#     ansible.builtin.dnf:
+#       name: mysql
+#       state: present
 
-  - name: check cities schema exists or not 
-    ansible.builtin.command: mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} -sN -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'cities'"
-    register: schema
+#   - name: check cities schema exists or not 
+#     ansible.builtin.command: mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} -sN -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'cities'"
+#     register: schema
 
-  - name: print output
-    ansible.builtin.debug:
-      msg: "schema output: {{schema}}"
+#   - name: print output
+#     ansible.builtin.debug:
+#       msg: "schema output: {{schema}}"
 
-  - name: Copy shipping.sql to target machine
-    ansible.builtin.copy:
-      src: schema/shipping.sql
-      dest: /tmp/shipping.sql
+#   - name: Copy shipping.sql to target machine
+#     ansible.builtin.copy:
+#       src: schema/shipping.sql
+#       dest: /tmp/shipping.sql
 
-  - name: Load shipping.sql into MySQL
-    ansible.builtin.command: >
-      mysql -h mysql.aarviaarno.online -uroot -pRoboShop@1 < /tmp/shipping.sql
-    args:
-      executable: /bin/bash
+#   - name: Load shipping.sql into MySQL
+#     ansible.builtin.command: >
+#       mysql -h mysql.aarviaarno.online -uroot -pRoboShop@1 < /tmp/shipping.sql
+#     args:
+#       executable: /bin/bash
 
 
-  - name: load cities data
-    ansible.builtin.shell: "mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} < /app/db/shipping.sql"
-    when: schema.stdout != "1"
+#   - name: load cities data
+#     ansible.builtin.shell: "mysql -h mysql.aarviaarno.online -uroot -p{{mysql_password}} < /app/db/shipping.sql"
+#     when: schema.stdout != "1"
 
-  # - name: import data
-  #   tags:
-  #   - import
-  #   community.mysql.mysql_db:
-  #     name: all
-  #     login_user: root
-  #     login_password: "{{mysql_password}}"
-  #     login_host: mysql.aarviaarno.online
-  #     state: import
-  #     target: "{{ item }}"
-  #   loop:
-  #   - /app/db/schema.sql
-  #   - /app/db/app-user.sql
-  #   - /app/db/master-data.sql
+#   # - name: import data
+#   #   tags:
+#   #   - import
+#   #   community.mysql.mysql_db:
+#   #     name: all
+#   #     login_user: root
+#   #     login_password: "{{mysql_password}}"
+#   #     login_host: mysql.aarviaarno.online
+#   #     state: import
+#   #     target: "{{ item }}"
+#   #   loop:
+#   #   - /app/db/schema.sql
+#   #   - /app/db/app-user.sql
+#   #   - /app/db/master-data.sql
 
-  - name: start and enable service
-    ansible.builtin.service:
-      name: shipping 
-      state: restarted
-      enabled: yes
+#   - name: start and enable service
+#     ansible.builtin.service:
+#       name: shipping 
+#       state: restarted
+#       enabled: yes
